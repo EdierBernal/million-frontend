@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import PropertyDetails from "./PropertyDetails"; // Import the new component
+import PropertyDetails from "./components/PropertyDetails"; // Import the new component
 
 type Property = {
   id: number;
