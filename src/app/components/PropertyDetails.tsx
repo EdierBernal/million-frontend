@@ -1,38 +1,15 @@
-import Image from "next/image";
+import React from "react";
+import { Property} from "@/Global/globalTypes";
 
-type Property = {
-  id: number;
-  name: string;
-  location: string;
-  price: string;
-  image: string;
-  description: string;
-};
-
-interface PropertyDetailsProps {
-  property: Property;
-}
-
-export default function PropertyDetails({ property }: PropertyDetailsProps) {
+export default function PropertyDetails({ property }: { property: Property }) {
   return (
-    <div className="p-6 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-      <Image
-        src={property.image}
-        alt={property.name}
-        width={600}
-        height={192}
-        className="w-full h-48 object-cover rounded mb-4"
-      />
-      <div className="text-2xl font-bold mb-2">{property.name}</div>
-      <div className="text-gray-600 dark:text-gray-300 mb-2">
-        {property.location}
-      </div>
-      <div className="text-blue-600 dark:text-blue-400 font-semibold mb-2">
-        {property.price}
-      </div>
-      <div className="text-gray-700 dark:text-gray-400">
-        {property.description}
-      </div>
+    <div>
+      <h2 className="text-xl font-semibold mb-2">Property Details</h2>
+      <div>Name: {property.name}</div>
+      <div>Address: {property.address}</div>
+      <div>Price: ${property.price}</div>
+      <div>CodeInternal: {property.codeInternal}</div>
+      <div>Year: {property.year}</div>
     </div>
   );
 }

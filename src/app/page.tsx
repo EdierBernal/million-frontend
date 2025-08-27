@@ -1,144 +1,103 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
-import PropertyDetails from "./components/PropertyDetails"; // Import the new component
-
-type Property = {
-  id: number;
-  name: string;
-  location: string;
-  price: string;
-  image: string;
-  description: string;
-};
-
-const properties: Property[] = [
-  {
-    id: 1,
-    name: "Modern Apartment",
-    location: "Downtown",
-    price: "$1,200/month",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    description: "A modern apartment in the heart of the city.",
-  },
-  {
-    id: 2,
-    name: "Cozy Cottage",
-    location: "Countryside",
-    price: "$900/month",
-    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
-    description: "A cozy cottage surrounded by nature.",
-  },
-  {
-    id: 3,
-    name: "Luxury Villa",
-    location: "Beachside",
-    price: "$3,500/month",
-    image: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd",
-    description: "A luxury villa with ocean views.",
-  },
-];
+import { useState, useEffect } from "react";
+import { getProperties, getPropertyImages, getPropertyTraces } from "../../services/propertyService";
+import { getOwners } from "../../services/ownerService";
+import PropertyDetails from "./components/PropertyDetails";
+import OwnerDetails from "./components/OwnerDetails";
+import PropertyImages from "./components/PropertyImages";
+import PropertyTraces from "./components/PropertyTraces";
+import { Property, Owner, PropertyImage, PropertyTrace } from "@/Global/globalTypes";
 
 export default function Home() {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [selected, setSelected] = useState<Property | null>(null);
+  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([]);
+  const [propertyTraces, setPropertyTraces] = useState<PropertyTrace[]>([]);
+  const [owners, setOwners] = useState<Owner[]>([]);
+
+  useEffect(() => {
+    getProperties()
+      .then((data) => setProperties(data))
+      .catch((error) => {
+        console.error("Error fetching properties:", error);
+      });
+
+    getPropertyImages()
+      .then((data) => setPropertyImages(data))
+      .catch((error) => {
+        console.error("Error fetching property images:", error);
+      });
+
+    getPropertyTraces()
+      .then((data) => setPropertyTraces(data))
+      .catch((error) => {
+        console.error("Error fetching property traces:", error);
+      });
+
+    getOwners()
+      .then((data) => setOwners(data))
+      .catch((error) => {
+        console.error("Error fetching owners:", error);
+      });
+  }, []);
+
+  const selectedImages = selected
+    ? propertyImages.filter(img => img.idProperty === selected.idProperty)
+    : [];
+  const selectedTraces = selected
+    ? propertyTraces.filter(trace => trace.idProperty === selected.idProperty)
+    : [];
+  const selectedOwner: Owner | null = selected
+    ? owners.find(owner => owner.idOwner === selected.idOwner) ?? null
+    : null;
 
   return (
-    <div className="font-sans min-h-screen p-8 pb-20 sm:p-20 bg-gray-50 dark:bg-gray-900">
-      <h1 className="text-3xl font-bold mb-8 text-center">Property Viewer</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Properties</h2>
-          <ul className="space-y-4">
-            {properties.map((property) => (
-              <li
-                key={property.id}
-                className={`p-4 rounded-lg border cursor-pointer transition ${
-                  selected?.id === property.id
-                    ? "bg-blue-100 border-blue-400"
-                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                }`}
-                onClick={() => setSelected(property)}
-              >
-                <div className="flex items-center gap-4">
-                  <Image
-                    src={property.image}
-                    alt={property.name}
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                  <div>
-                    <div className="font-medium">{property.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {property.location}
-                    </div>
-                    <div className="text-blue-600 dark:text-blue-400 font-semibold">
-                      {property.price}
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Details</h2>
-          {selected ? (
-            <PropertyDetails property={selected} />
-          ) : (
-            <div className="text-gray-500 dark:text-gray-400">
-              Select a property to view details.
+    <div
+      className="p-8 min-h-screen text-black"
+      style={{
+        backgroundImage: "url('https://cdn.luxatic.com/wp-content/uploads/2021/11/Luxury-Home-Features.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="bg-white bg-opacity-90 rounded-xl max-w-6xl mx-auto py-8 px-4">
+        <h1 className="text-5xl font-extrabold mb-10 text-black text-center">Properties Viewer</h1>
+        <ul className="space-y-4 mb-8">
+          {properties.map((property) => (
+            <li
+              key={property.id}
+              className={`border rounded-lg p-4 shadow-sm cursor-pointer ${selected?.id === property.id ? "bg-blue-100 border-blue-400" : "bg-white"
+                } text-black`}
+              onClick={() => setSelected(property)}
+            >
+              <div className="font-semibold text-lg text-black">{property.name}</div>
+              <div className="text-green-700 font-bold">Price: ${property.price}</div>
+              <div className="text-gray-800">Address: {property.address}</div>
+              <div className="text-xs text-gray-600">
+                Code: {property.codeInternal} | Year: {property.year}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {selected && (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center md:col-span-2 text-black">
+              <PropertyImages images={selectedImages} propertyName={selected.name} />
             </div>
-          )}
-        </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-black">
+              <PropertyDetails property={selected} />
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-black">
+              <OwnerDetails owner={selectedOwner} />
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center md:col-span-2 text-black">
+              <PropertyTraces traces={selectedTraces} />
+            </div>
+          </div>
+        )}
       </div>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
